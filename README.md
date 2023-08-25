@@ -1,59 +1,130 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Community Support](https://badgen.net/badge/support/community/cyan?icon=awesome)](https://github.com/nginxinc/ciroque-nginx/nginx-with-mutual-tls/blob/main/SUPPORT.md)
-<!-- [![Commercial Support](https://badgen.net/badge/support/commercial/cyan?icon=awesome)](<Insert URL>) -->
-
-# NGINX Template Repository
-
-## What is included on this template?
-
-This template includes all the scaffolding you need to get started on a standards compliant NGINX repository:
-
-- Standard license for NGINX OSS projects
-- Standard `.gitignore` with minimal defaults
-- Issue and PR templates
-- Contributing guidelines
-- Support guidelines
-- Security guidelines for reporting major vulnerabilities
-- NGINX Code of Conduct
-- README placeholder. How you structure the README is up to you (although the template provides placeholder sections), but you will need to include:
-  - A [repostatus](https://www.repostatus.org/) badge
-  - A community and commercial support badge. Include the latter -- and replace the URL placeholder with the relevant support URL -- if this repository contains a commercially supported project. You can find a commented out example below the community badge in this README.
-  - An explicit link back to the [Apache License 2.0](https://github.com/nginxinc/template-repository/blob/main/LICENSE)
-  - An up to date copyright notice
-- Changelog placeholder. (Optional -- A changelog is recommended, but it is not required and can diverge in format from the placeholder here included.)
-- Codeowners placeholder. (Optional -- Codeowners is a useful GitHub feature, but not all repositories require them.)
-
-## How do I use this template?
-
-**DO NOT FORK** -- this template is meant to be used from the **[`Use this template`](https://github.com/nginxinc/template-repository/generate)** feature.
-
-1. Click on **[`Use this template`](https://github.com/nginxinc/template-repository/generate)**
-2. Give a name to your project
-3. Wait until the first run of CI finishes (GitHub Actions will process the template and commit to your new repo)
-4. Clone your new project and tweak any of the placeholders if necessary. Pay special attention to the README!
-5. Happy coding!
-
-**NOTE**: **WAIT** until the first CI run on GitHub Actions finishes before cloning your new project.
-
----
-
-<!--  DELETE THE LINES ABOVE THIS AND WRITE YOUR PROJECT README BELOW -- PLACEHOLDER SECTIONS HAVE BEEN INCLUDED FOR YOUR CONVENIENCE -->
-
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
 
 # nginx_with_mutual_tls
 
+## Overview
+
+As part of a Jazz Exploration in D-minor, this repo shows how to configure mutual TLS (mTLS) to secure communication between NGINX Plus and a client written in Go.
+
+The primary impetus for this exploration is to bolster the [NGINX LoadBalancer for Kubernetes](https://github.com/nginxinc/nginx-loadbalancer-kubernetes) project with mTLS support.
+
+A primary objective of this exploration is to make use of self-signed certificates. While the provided steps may
+work with certificates signed by a Certificate Authority (CA), it is not a goal of this project.
+
 ## Requirements
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam elit turpis, varius et arcu elementum, viverra rhoncus sem. Aliquam nec sodales magna, et egestas enim. Mauris lobortis ultrices euismod. Pellentesque in arcu lacus. Mauris cursus laoreet nulla, ac vehicula est. Vestibulum eu mauris quis lorem consectetur aliquam ac nec quam. Vestibulum commodo pharetra mi, at bibendum neque faucibus ut. Mauris et tortor sed sem consectetur eleifend ut non magna. Praesent feugiat placerat nibh, varius viverra orci bibendum sed. Vestibulum dapibus ex ut pulvinar facilisis. Quisque sodales enim et augue tempor mattis. Suspendisse finibus congue felis, ac blandit ligula. Praesent condimentum ultrices odio quis semper. Nunc ultrices, nibh quis mattis pellentesque, elit nulla bibendum felis, quis dapibus erat turpis ac urna.
+This project simply requires Go 1.19.4 or later.
+
+Use `asdf`? If so, you can simply run `asdf install` from the root of the project, and you'll be good to go.
+
+Oh. You will also need a running NGINX Plus. You can [get a trial license](https://www.nginx.com/free-trial-request/); 
+and follow the [installation guide](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus/) to meet this requirement.
 
 ## Getting Started
 
-Duis sit amet sapien vel velit ornare vulputate. Nulla rutrum euismod risus ac efficitur. Curabitur in sagittis elit, a semper leo. Suspendisse malesuada aliquam velit, eu suscipit lorem vehicula at. Proin turpis lacus, semper in placerat in, accumsan non ipsum. Cras euismod, elit eget pretium laoreet, tortor nulla finibus tortor, nec hendrerit elit turpis ut eros. Quisque congue nisi id mauris molestie, eu condimentum dolor rutrum. Nullam eleifend elit ac lobortis tristique. Pellentesque nec tellus non mauris aliquet commodo a eu elit. Ut at feugiat metus, at tristique mauris. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
+Clone the repo:
 
-## How to Use
+```bash 
+git clone git@github.com:ciroque-nginx/nginx-with-mutual-tls.git
+```
 
-Maecenas at vehicula justo. Suspendisse posuere elementum elit vel posuere. Etiam quis pulvinar massa. Integer tempor semper risus, vitae maximus eros ullamcorper vitae. In egestas, ex vitae gravida sodales, ipsum dolor varius est, et cursus lorem dui a mi. Morbi faucibus ut nisi id faucibus. Sed quis ullamcorper ex. In et dolor id nunc interdum suscipit.
+Then:
+
+1. Review and edit the [configuration files](#configuration-files),
+1. Follow the [certificate generation instructions](#generate-certificates),
+1. Follow the [NGINX Plus configuration instructions](#configure-nginx-plus),
+1. Follow the [client configuration instructions](#configure-client). 
+
+### Configuration Files
+
+There are three configuration files that need to be edited to match your environment.
+- [ca.cnf](#cacnf)
+- [server.cnf](#servercnf)
+- [client.cnf](#clientcnf)
+
+These files are located in the `tls` directory. Each of the files will need to be updated with your desired
+distinguished name (DN) information -- which is used to identify the certificate owner. The fields are:
+- C: Country
+- ST: State
+- L: Locality
+- O: Organization
+- OU: Organizational Unit
+- CN: Common Name
+
+It should be noted that the CN field is deprecated, and the Subject Alternative Name (SAN) should be used instead. The
+SAN will be described in more detail in the [Server Certificate generation section](#generate-the-server-certificate).
+
+More information about the DN fields can be found [here](https://www.cryptosys.net/pki/manpki/pki_distnames.html).
+
+The required updates to each file are detailed below.
+
+#### ca.cnf
+
+This file only needs to have the DN information updated.
+
+#### server.cnf
+
+This file needs to have the DN information updated, and the SAN information (DNS / IP entries in the `alt_names` section) added / updated.
+
+#### client.cnf
+
+This file only needs to have the DN information updated.
+
+### Generate Certificates
+
+In order to use self-signed certificates, we'll need a Certificate Authority (CA). We'll use OpenSSL to generate the CA and the certificates.
+This will then be used to sign the certificates for the client and the server. The CA certificate will then need to be 
+provided to both the client and NGINX Plus to allow authentication.
+
+#### Generate the CA
+
+```bash
+openssl req -newkey rsa:2048 -nodes -x509 -config ca.cnf -out ca.crt -keyout ca.key
+```
+
+#### Generate the Server Certificate
+
+```bash
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -config server.cnf -out server.csr
+```
+
+#### Sign the Server Certificate
+
+```bash
+openssl x509  -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256 -extensions req_ext -extfile server.cnf
+```
+
+#### Verify the Server Certificate has the SAN
+
+```bash
+openssl x509 -in server.crt -text -noout | grep -A 1 "Subject Alternative Name"
+```
+
+#### Generate the Client Certificate
+
+```bash 
+openssl genrsa -out client.key 2048
+openssl req -new -key client.key -config client.cnf -out client.csr
+```
+
+#### Sign the Client Certificate
+
+```bash
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365 -sha256 -extfile client.cnf -extensions client
+```
+
+#### Verify the Client Certificate has the correct extendedKeyUsage
+
+```bash
+openssl x509 -in client.crt -noout -purpose | grep 'SSL client :'
+```
+
+### Configure NGINX Plus
+
+### Configure Client
 
 ## Contributing
 
@@ -63,3 +134,11 @@ Please see the [contributing guide](https://github.com/ciroque-nginx/nginx-with-
 
 [Apache License, Version 2.0](https://github.com/ciroque-nginx/nginx-with-mutual-tls/blob/main/LICENSE)
 
+## References
+[What is mutual TLS (mTLS)?](https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/)
+
+[How to MTLS in golang](https://kofo.dev/how-to-mtls-in-golang)
+
+[A step-by-step guide to mTLS in Go](https://venilnoronha.io/a-step-by-step-guide-to-mtls-in-go)
+
+[TLS mutual authentication with golang and nginx](https://medium.com/rahasak/tls-mutual-authentication-with-golang-and-nginx-937f0da22a0e)
