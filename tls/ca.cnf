@@ -4,8 +4,8 @@ prompt = no
 days = 365
 
 [ dn ]
-C=US
-ST=Washington
-L=Indianola
-O=Development
-OU=Testing
+C=[COUNTRY]
+ST=[STATE]
+L=[LOCALITY]
+O=[ORGANIZATION]
+OU=[ORGANIZATION_UNIT]
