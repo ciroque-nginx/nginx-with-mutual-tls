@@ -18,5 +18,5 @@ extendedKeyUsage = serverAuth
 
 [ alt_names ]
 DNS.1 = [mydomain.com]
-DNS.2 = [server.mydomain.com
+DNS.2 = [server.mydomain.com]
 DNS.3 = [*.mydomain.com]
