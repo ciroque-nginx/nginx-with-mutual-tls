@@ -1,0 +1,11 @@
+[ req ]
+distinguished_name = dn
+prompt = no
+days = 365
+
+[ dn ]
+C=US
+ST=Washington
+L=Indianola
+O=Development
+OU=Testing

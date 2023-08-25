@@ -1,0 +1,24 @@
+[ req ]
+distinguished_name = dn
+req_extensions = req_ext
+prompt = no
+days = 365
+
+[ dn ]
+C=US
+ST=Washington
+L=Indianola
+O=Development
+OU=Testing
+CN=[mydomain.com]
+
+[ req_ext ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+extendedKeyUsage = serverAuth
+
+[ alt_names ]
+DNS.1 = [mydomain.com]
+DNS.2 = [server.mydomain.com
+DNS.3 = [*.mydomain.com]

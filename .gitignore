@@ -1,4 +1,7 @@
 # Any private crt and keys #
+.idea/
+bin/
+
 ############################
 *.crt
 *.key
@@ -14,3 +17,4 @@ Thumbs.db
 # Logs #
 ########
 *.log
+/misc-dev/
