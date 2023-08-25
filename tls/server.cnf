@@ -2,7 +2,6 @@
 distinguished_name = dn
 req_extensions = req_ext
 prompt = no
-days = 365
 
 [ dn ]
 C=[COUNTRY]

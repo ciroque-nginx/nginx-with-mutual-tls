@@ -1,7 +1,6 @@
 [ req ]
 distinguished_name = dn
 prompt = no
-days = 365
 
 [ dn ]
 C=[COUNTRY]
