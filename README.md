@@ -15,9 +15,9 @@ work with certificates signed by a Certificate Authority (CA), it is not a goal 
 
 ## Requirements
 
-This project simply requires Go 1.19.4 or later.
+This project requires Go 1.19.4 or later.
 
-Use `asdf`? If so, you can simply run `asdf install` from the root of the project, and you'll be good to go.
+Use `asdf`? If so, you can run `asdf install` from the root of the project, and you'll be good to go.
 
 Oh. You will also need a running NGINX Plus. You can [get a trial license](https://www.nginx.com/free-trial-request/); 
 and follow the [installation guide](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus/) to meet this requirement.
@@ -79,7 +79,7 @@ This file only needs to have the DN information updated.
 
 ### Generate Certificates
 
-In order to use self-signed certificates, we'll need a Certificate Authority (CA). We'll use OpenSSL to generate the CA and the certificates.
+In order to use self-signed certificates, a Certificate Authority (CA) is required. The `openssl` utility will be used to generate the CA and the certificates.
 This will then be used to sign the certificates for the client and the server. The CA certificate will then need to be 
 provided to both the client and NGINX Plus to allow authentication.
 
@@ -133,7 +133,7 @@ openssl x509 -in client.crt -noout -purpose | grep 'SSL client :'
 
 #### Configuring the Server certificate
 
-Copy the server certificate (`server.crt`, `server.key`, and `ca.crt`) to the NGINX host; place the files in the `/etc/ssl/certs/nginx` directory.
+Copy the necessary server files (`server.crt`, `server.key`, and `ca.crt`) to the NGINX host; place the files in the `/etc/ssl/certs/nginx` directory.
 
 In the `/etc/nginx/nginx.conf` file, add the following to the `http` or `server` section (refer to the [documentation](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_certificate) for details):
 
@@ -175,6 +175,38 @@ curl --cert client.crt --key client.key --cacert ca.crt https://<your-host>/api
 A simple client to test the certs can be found in the `client/main.go` file. 
 The client uses the `tls/ca.crt` file to validate the server certificate; 
 the `tls/client.crt` and `tls/client.key` files are used to authenticate the client.
+
+The client makes use of the CA certificate by loading the `tls/ca.crt` file and adding it to a Certificate Pool:
+
+```go
+	caCert, err := os.ReadFile("tls/ca.crt")
+	if err != nil {
+		log.Fatalf("could not open certificate file: %v", err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+```
+
+The client likewise uses the client certificate and key by loading the `tls/client.crt` and `tls/client.key` files:
+
+```go
+    cert, err := tls.LoadX509KeyPair("tls/client.crt", "tls/client.key")
+    if err != nil {
+        log.Fatalf("could not load client key pair: %v", err)
+    }
+```
+
+Once these files are loaded, the `tls.Config` object is initialized with the `RootCAs` and `Certificates`; 
+additionally, `InsecureSkipVerify` is set to false, ensuring the server certificate is validated:
+
+```go
+    tlsConfig := &tls.Config{
+        RootCAs:            caCertPool,
+        Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: false,
+    }
+```
 
 To run the client, execute the following command:
 
