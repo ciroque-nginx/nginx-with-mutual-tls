@@ -5,14 +5,13 @@ import (
 	"crypto/x509"
 	"fmt"
 	nginxClient "github.com/nginxinc/nginx-plus-go-client/client"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
 
 func main() {
-	caCert, err := ioutil.ReadFile("tls/ca.crt")
+	caCert, err := os.ReadFile("tls/ca.crt")
 	if err != nil {
 		log.Fatalf("could not open certificate file: %v", err)
 	}
