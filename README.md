@@ -56,8 +56,12 @@ distinguished name (DN) information -- which is used to identify the certificate
 More information about the DN fields can be found [here](https://www.cryptosys.net/pki/manpki/pki_distnames.html).
 
 It should be noted that the CN field is deprecated, and the Subject Alternative Name (SAN) should be used instead. 
-To include the SAN, the `alt_names` section of the configuration file will need to be updated. If multiple NGINX Plus instances 
-are being used, the DNS entries can use wildcards. For example, `*.example.com` would match `foo.example.com` and `bar.example.com`.
+To include the SAN, the `alt_names` section of the configuration file will need to be updated. The `alt_names` includes either IP Addresses or hostnames. 
+IP Addresses use the format: `IP.i = n.n.n.n` where `i` is the desired index in the list. 
+Hostnames use the format: `DNS.i = hostname` where `i` is the desired index in the list.
+The `server.cnf` file has examples of both IP Addresses and hostnames.
+
+If multiple NGINX Plus instances are being used, the DNS entries can use wildcards. For example, `*.example.com` would match `foo.example.com` and `bar.example.com`.
 
 The required updates to each file are detailed below.
 
@@ -167,6 +171,18 @@ curl --cert client.crt --key client.key --cacert ca.crt https://<your-host>/api
 ```
 
 ### Configure Client
+
+A simple client to test the certs can be found in the `client/main.go` file. 
+The client uses the `tls/ca.crt` file to validate the server certificate; 
+the `tls/client.crt` and `tls/client.key` files are used to authenticate the client.
+
+To run the client, execute the following command:
+
+```bash
+NGINX_PLUS_API_ENDPOINT=<your-host> go run client/main.go
+```
+
+If successful, the client will print the NGINX Info response. Otherwise, an error will be printed.
 
 ## Contributing
 

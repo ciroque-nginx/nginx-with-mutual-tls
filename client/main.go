@@ -39,7 +39,7 @@ func main() {
 
 	apiEndpoint := os.Getenv("NGINX_PLUS_API_ENDPOINT")
 	if apiEndpoint == "" {
-		apiEndpoint = "https://localhost:443/api"
+		apiEndpoint = "https://localhost/api"
 	}
 
 	ngxClient, err := nginxClient.NewNginxClient(httpClient, apiEndpoint)
