@@ -53,10 +53,11 @@ distinguished name (DN) information -- which is used to identify the certificate
 - OU: Organizational Unit
 - CN: Common Name
 
-It should be noted that the CN field is deprecated, and the Subject Alternative Name (SAN) should be used instead. The
-SAN will be described in more detail in the [Server Certificate generation section](#generate-the-server-certificate).
-
 More information about the DN fields can be found [here](https://www.cryptosys.net/pki/manpki/pki_distnames.html).
+
+It should be noted that the CN field is deprecated, and the Subject Alternative Name (SAN) should be used instead. 
+To include the SAN, the `alt_names` section of the configuration file will need to be updated. If multiple NGINX Plus instances 
+are being used, the DNS entries can use wildcards. For example, `*.example.com` would match `foo.example.com` and `bar.example.com`.
 
 The required updates to each file are detailed below.
 
@@ -85,6 +86,8 @@ openssl req -newkey rsa:2048 -nodes -x509 -config ca.cnf -out ca.crt -keyout ca.
 ```
 
 #### Generate the Server Certificate
+
+Ensure the `alt_names` section of the `server.cnf` file has been updated with the desired DNS entries, use wildcards where appropriate.
 
 ```bash
 openssl genrsa -out server.key 2048
@@ -123,6 +126,45 @@ openssl x509 -in client.crt -noout -purpose | grep 'SSL client :'
 ```
 
 ### Configure NGINX Plus
+
+#### Configuring the Server certificate
+
+Copy the server certificate (`server.crt`, `server.key`, and `ca.crt`) to the NGINX host; place the files in the `/etc/ssl/certs/nginx` directory.
+
+In the `/etc/nginx/nginx.conf` file, add the following to the `http` or `server` section (refer to the [documentation](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_certificate) for details):
+
+```bash
+http {
+  ssl_certificate       /etc/ssl/certs/nginx/server.crt;
+  ssl_certificate_key   /etc/ssl/certs/nginx/server.key;
+}
+```
+
+For a client to validate this certificate, it will need the CA certificate. See the [Configure Client](#configure-client) section for details.
+
+#### Configuring NGINX Plus to require client certificates
+
+In the `/etc/nginx/nginx.conf` file, add the following to the `http` or `server` section (refer to the [documentation](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_client_certificate) for details):
+
+```bash
+http {
+  ssl_client_certificate    /etc/ssl/certs/nginx/ca.crt;
+  ssl_verify_client         on;
+  ssl_verify_depth          3;
+}
+```
+
+Restart NGINX Plus to apply the changes.
+
+```bash
+nginx -s reload
+```
+
+Test with curl:
+
+```bash
+curl --cert client.crt --key client.key --cacert ca.crt https://<your-host>/api
+```
 
 ### Configure Client
 
