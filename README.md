@@ -11,7 +11,8 @@ As part of a Jazz Exploration in D-minor, this repo shows how to configure mutua
 The primary impetus for this exploration is to bolster the [NGINX LoadBalancer for Kubernetes](https://github.com/nginxinc/nginx-loadbalancer-kubernetes) project with mTLS support.
 
 A primary objective of this exploration is to make use of self-signed certificates. While the provided steps may
-work with certificates signed by a Certificate Authority (CA), it is not a goal of this project.
+work with certificates signed by a Certificate Authority (CA), it is not a goal of this project. It is not tested, nor is it a design goal. 
+Therefore, you would need to test it for yourself.
 
 ## Requirements
 
