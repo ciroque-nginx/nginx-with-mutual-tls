@@ -179,33 +179,32 @@ the `tls/client.crt` and `tls/client.key` files are used to authenticate the cli
 The client makes use of the CA certificate by loading the `tls/ca.crt` file and adding it to a Certificate Pool:
 
 ```go
-	caCert, err := os.ReadFile("tls/ca.crt")
-	if err != nil {
-		log.Fatalf("could not open certificate file: %v", err)
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-
+caCert, err := os.ReadFile("tls/ca.crt")
+if err != nil {
+    log.Fatalf("could not open certificate file: %v", err)
+}
+caCertPool := x509.NewCertPool()
+caCertPool.AppendCertsFromPEM(caCert)
 ```
 
 The client likewise uses the client certificate and key by loading the `tls/client.crt` and `tls/client.key` files:
 
 ```go
-    cert, err := tls.LoadX509KeyPair("tls/client.crt", "tls/client.key")
-    if err != nil {
-        log.Fatalf("could not load client key pair: %v", err)
-    }
+cert, err := tls.LoadX509KeyPair("tls/client.crt", "tls/client.key")
+if err != nil {
+    log.Fatalf("could not load client key pair: %v", err)
+}
 ```
 
 Once these files are loaded, the `tls.Config` object is initialized with the `RootCAs` and `Certificates`; 
 additionally, `InsecureSkipVerify` is set to false, ensuring the server certificate is validated:
 
 ```go
-    tlsConfig := &tls.Config{
-        RootCAs:            caCertPool,
-        Certificates:       []tls.Certificate{cert},
-		InsecureSkipVerify: false,
-    }
+tlsConfig := &tls.Config{
+    RootCAs:            caCertPool,
+    Certificates:       []tls.Certificate{cert},
+    InsecureSkipVerify: false,
+}
 ```
 
 To run the client, execute the following command:
