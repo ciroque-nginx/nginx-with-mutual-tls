@@ -106,6 +106,8 @@ openssl x509  -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out 
 
 #### Verify the Server Certificate has the SAN
 
+Look for the DNS / IP entries in the `Subject Alternative Name` section.
+
 ```bash
 openssl x509 -in server.crt -text -noout | grep -A 1 "Subject Alternative Name"
 ```
@@ -124,6 +126,8 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out c
 ```
 
 #### Verify the Client Certificate has the correct extendedKeyUsage
+
+Look for `SSL client : Yes` in the output.
 
 ```bash
 openssl x509 -in client.crt -noout -purpose | grep 'SSL client :'
